@@ -30,11 +30,11 @@ export const ICON_NEXT = "mdi:calendar-week";
 export const STRING_HOURS = " h. ";
 export const STRING_MINUTES = " mins. ";
 export const STRING_SECONDS = " secs.";
-export var WEEKDAYS = { 1 : "mon.",
-             2 : "tue.",
-             3 : "wed.",
-             4 : "thu.",
-             5 : "fri.",
-             6 : "sat.",
-             0 : "sun."
+export const WEEKDAYS = { 1 : "Mon",
+             2 : "Tue",
+             3 : "Wed",
+             4 : "Thu",
+             5 : "Fri",
+             6 : "Sat",
+             0 : "Sun"
            };

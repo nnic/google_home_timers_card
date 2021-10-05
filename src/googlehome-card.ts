@@ -4,9 +4,9 @@ import { HomeAssistant, hasConfigOrEntityChanged, hasAction, ActionHandlerEvent,
 
 import './editor';
 
-import type { GoogleHomeCardConfig } from './types';
+import type { Alarm, GoogleHomeCardConfig } from './types';
 import { actionHandler } from './action-handler-directive';
-import { NO_TIMERS, JSON_ALARMS, CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_DURATION, JSON_FIRE_TIME, JSON_LOCAL_TIME, JSON_NAME, JSON_RECURRENCE, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
+import { JSON_TIMERS, NO_TIMERS, JSON_ALARMS, CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_DURATION, JSON_FIRE_TIME, JSON_LOCAL_TIME, JSON_NAME, JSON_RECURRENCE, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
 import { localize } from './localize/localize';
 
 /* eslint no-console: 0 */
@@ -53,6 +53,7 @@ export class GoogleHomeCardNew extends LitElement {
 
     this.config = {
       name: 'Google Home',
+      use12hour: true,
       ...config,
     };
   }
@@ -78,8 +79,9 @@ export class GoogleHomeCardNew extends LitElement {
     }
 
     const stateAlarms = this.hass.states[this.config.entity ?? ""];
+    const stateTimers = this.hass.states[this.config.timerEntity ?? ""];
 
-    const entries = this.generateEntries(stateAlarms.attributes[JSON_ALARMS], []);
+    const entries = this.generateEntries(stateAlarms.attributes[JSON_ALARMS], stateTimers.attributes[JSON_TIMERS]);
 
     return html`
       <ha-card
@@ -120,29 +122,40 @@ export class GoogleHomeCardNew extends LitElement {
     return ts;
   }
 
-  private formatAlarmTime(ts: number, isAmpm: boolean): string {
-    const d = new Date(ts * 1000)
+  private formatAlarmTime(ts: number, isAmpm?: boolean): string {
+    const d = new Date(ts * 1000);
     const time = d.toLocaleString(window.navigator.language, {weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: isAmpm })
     return time
   }
 
-  private generateAlarmEntry(alarm: string): string {
+  private generateAlarmEntry(alarm: Alarm): TemplateResult {
 
-    const formattedTime = this.formatAlarmTime(alarm[JSON_FIRE_TIME], this.config.use_12hour)
+    const formattedTime = this.formatAlarmTime(alarm.fire_time, this.config.use12hour)
 
-    const alarmName = alarm[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + alarm[JSON_NAME] + "</span></div>" : ""
+    const alarmName = alarm[JSON_NAME] != null ? html`
+      <div style="margin: 0 15px 0 15px;">
+        <span class="title">
+          <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_LABEL}"></ha-icon>
+            ${alarm[JSON_NAME]}
+          </span>
+      </div>` : "";
+
     let recurrence = "";
-    const alarmNext = alarm[JSON_RECURRENCE] != null ? '<ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="'+ ICON_NEXT +'"></ha-icon>' : ""
 
-    if (alarm[JSON_RECURRENCE] != null && alarm[JSON_RECURRENCE].length >= 7) {
-      recurrence = "all weekdays"
-    } else if (alarm[JSON_RECURRENCE] != null) {
-      alarm[JSON_RECURRENCE].forEach(function(entry) {
-          recurrence += WEEKDAYS[entry] + " "
-      });
+    const alarmNext = alarm.recurrence != null ? html`
+      <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_NEXT}"></ha-icon>` : ""
+
+    const weekdays = [1, 2, 3, 4, 5];
+
+    if (alarm.recurrence?.length >= 7) {
+      recurrence = "Every day";
+    } else if (weekdays.every(x => alarm.recurrence.includes(x))) {
+      recurrence = "Weekdays";
+    } else {
+      recurrence = alarm[JSON_RECURRENCE]?.map(x => WEEKDAYS[x]).join(", ") ?? "";
     }
 
-    const entry = `
+    const entry = html`
     <div>
       ${alarmName}
       <div class="info" style="margin: -5px 0 -5px;">
@@ -155,7 +168,7 @@ export class GoogleHomeCardNew extends LitElement {
     return entry
   }
 
-  private generateTimerEntry(timer: string): string {
+  private generateTimerEntry(timer: string): TemplateResult {
 
     let timerIcon = ICON_TIMER
 
@@ -170,7 +183,7 @@ export class GoogleHomeCardNew extends LitElement {
     const timerName = timer[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + timer[JSON_NAME] + "</span></div>" : ""
     const alarmTime = this.config.show_fire_time ? "<span class='duration'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_ALARM_TIME + "'></ha-icon>" + timer[JSON_LOCAL_TIME].split(" ")[1] + "</span>" : ""
 
-    const entry = `
+    const entry = html`
     <div>
       ${timerName}
       <div class="info" style="margin: -5px 0 -5px;">
@@ -183,15 +196,15 @@ export class GoogleHomeCardNew extends LitElement {
     return entry
   }
 
-  private generateEntries(alarms: string[], timers: string[]): string[] {
+  private generateEntries(alarms: Alarm[] = [], timers: any[] = []): TemplateResult[] {
 
-    const entries: string[] = [];
+    const entries: TemplateResult[] = [];
 
-    for (const alarm in alarms) {
+    for (const alarm of alarms) {
       entries.push(this.generateAlarmEntry(alarm));
     }
 
-    for (const timer in timers) {
+    for (const timer of timers) {
       entries.push(this.generateTimerEntry(timer));
     }
 
@@ -291,7 +304,6 @@ export class GoogleHomeCardNew extends LitElement {
         .next {
           font-size: 0.7em;
           padding: 0 5px 15px 5px;
-          text-transform: lowercase;
           overflow: hidden;
           white-space: wrap;
           text-overflow: ellipsis;

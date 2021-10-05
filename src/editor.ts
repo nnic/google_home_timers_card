@@ -85,6 +85,14 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
     return this._config?.entity || '';
   }
 
+  get _timerEntity(): string {
+    return this._config?.timerEntity || '';
+  }
+
+  get _use12hour(): boolean {
+    return this._config?.use12hour || false;
+  }
+
   get _show_warning(): boolean {
     return this._config?.show_warning || false;
   }
@@ -129,7 +137,7 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
           ? html`
               <div class="values">
                 <paper-dropdown-menu
-                  label="Entity (Required)"
+                  label="Alarm Entity (Required)"
                   @value-changed=${this._valueChanged}
                   .configValue=${'entity'}
                 >
@@ -141,7 +149,28 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
                     })}
                   </paper-listbox>
                 </paper-dropdown-menu>
-              </div>
+                <paper-dropdown-menu
+                  label="Timer Entity (Required)"
+                  @value-changed=${this._valueChanged}
+                  .configValue=${'timerEntity'}
+                >
+                  <paper-listbox slot="dropdown-content" .selected=${entities.indexOf(this._timerEntity)}>
+                    ${entities.map(entity => {
+                      return html`
+                        <paper-item>${entity}</paper-item>
+                      `;
+                    })}
+                  </paper-listbox>
+                </paper-dropdown-menu>
+
+              <ha-formfield .label=${`Use 12 hour`}>
+                  <ha-switch
+                    .checked=${this._use12hour}
+                    .configValue=${'use12hour'}
+                    @change=${this._valueChanged}
+                  ></ha-switch>
+                </ha-formfield>
+                </div>
             `
           : ''}
         <div class="option" @click=${this._toggleOption} .option=${'actions'}>
@@ -266,21 +295,27 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
   }
 
   private _valueChanged(ev): void {
+
     if (!this._config || !this.hass) {
       return;
     }
     const target = ev.target;
+    console.log("Test");
     if (this[`_${target.configValue}`] === target.value) {
       return;
     }
-    if (target.configValue) {
+    console.log("Test 2");
+    if (target.configValue !== undefined) {
+      console.log("Target checked: " + target.checked);
       if (target.value === '') {
         delete this._config[target.configValue];
       } else {
+        console.log("Config Before: ", this._config);
         this._config = {
           ...this._config,
           [target.configValue]: target.checked !== undefined ? target.checked : target.value,
         };
+        console.log("Config After: ", this._config);
       }
     }
     fireEvent(this, 'config-changed', { config: this._config });
