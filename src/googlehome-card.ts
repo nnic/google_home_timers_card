@@ -1,30 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  LitElement,
-  html,
-  customElement,
-  property,
-  CSSResult,
-  TemplateResult,
-  css,
-  PropertyValues,
-  internalProperty,
-} from 'lit-element';
-import {
-  HomeAssistant,
-  hasConfigOrEntityChanged,
-  hasAction,
-  ActionHandlerEvent,
-  handleAction,
-  LovelaceCardEditor,
-  getLovelace,
-} from 'custom-card-helpers'; // This is a community maintained npm module with common helper functions/types
+import { LitElement, html, customElement, property, CSSResult, TemplateResult, css, PropertyValues, internalProperty, } from 'lit-element';
+import { HomeAssistant, hasConfigOrEntityChanged, hasAction, ActionHandlerEvent, handleAction, LovelaceCardEditor, getLovelace, } from 'custom-card-helpers';
 
 import './editor';
 
 import type { GoogleHomeCardConfig } from './types';
 import { actionHandler } from './action-handler-directive';
-import { CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_DURATION, JSON_FIRE_TIME, JSON_LOCAL_TIME, JSON_NAME, JSON_RECURRENCE, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
+import { NO_TIMERS, JSON_ALARMS, CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_DURATION, JSON_FIRE_TIME, JSON_LOCAL_TIME, JSON_NAME, JSON_RECURRENCE, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
 import { localize } from './localize/localize';
 
 /* eslint no-console: 0 */
@@ -35,8 +17,8 @@ console.info(
 );
 
 // This puts your card into the UI card picker dialog
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
+window.customCards = window.customCards || [];
+window.customCards.push({
   type: 'googlehome-card-new',
   name: 'Google Home Card New',
   description: 'A custom card for the Google Home community integration.',
@@ -94,20 +76,26 @@ export class GoogleHomeCardNew extends LitElement {
     if (this.config.show_error) {
       return this._showError(localize('common.show_error'));
     }
-    // ${this.generate_entries()}
+
+    const stateAlarms = this.hass.states[this.config.entity ?? ""];
+
+    const entries = this.generateEntries(stateAlarms.attributes[JSON_ALARMS], []);
+
     return html`
       <ha-card
         .header=${this.config.name}
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
-          hasHold: hasAction(this.config.hold_action),
-          hasDoubleClick: hasAction(this.config.double_tap_action),
-        })}
+      hasHold: hasAction(this.config.hold_action),
+      hasDoubleClick: hasAction(this.config.double_tap_action),
+    })}
         tabindex="0"
         .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}
       >
         <div class="entries">
-          ${this.generate_entries([this.config.entity ?? ""], [])}
+        ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
+        <span class="value">${NO_TIMERS}</span>
+      </div>`}
         </div>
       </ha-card>
     `;
@@ -120,31 +108,31 @@ export class GoogleHomeCardNew extends LitElement {
   //   return attributes
   // }
 
-  private get_timedelta(timestamp: number) {
+  private getTimeDelta(timestamp: number): Date {
     return new Date((timestamp * 1000) - Date.now());
   }
 
-  private format_to_human_readeble(rt: any) {
-    var h = rt.getUTCHours() > 0 ? rt.getUTCHours() + STRING_HOURS : ""
-    var m = rt.getUTCMinutes() < 10  && rt.getUTCHours() > 1 ? "0"+ rt.getUTCMinutes() : rt.getUTCMinutes();
-    var s = rt.getUTCSeconds() < 10 ? "0"+ rt.getUTCSeconds() : rt.getUTCSeconds();
-    var ts = h + m + STRING_MINUTES + s + STRING_SECONDS;
+  private formatToHumanReadeble(rt: Date): string {
+    const h = rt.getUTCHours() > 0 ? rt.getUTCHours() + STRING_HOURS : ""
+    const m = rt.getUTCMinutes() < 10  && rt.getUTCHours() > 1 ? "0"+ rt.getUTCMinutes() : rt.getUTCMinutes();
+    const s = rt.getUTCSeconds() < 10 ? "0"+ rt.getUTCSeconds() : rt.getUTCSeconds();
+    const ts = h + m + STRING_MINUTES + s + STRING_SECONDS;
     return ts;
   }
 
-  private format_alarm_time(ts: number, is_ampm: boolean) {
-    var d = new Date(ts * 1000)
-    var time = d.toLocaleString(window.navigator.language, {weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: is_ampm })
+  private formatAlarmTime(ts: number, isAmpm: boolean): string {
+    const d = new Date(ts * 1000)
+    const time = d.toLocaleString(window.navigator.language, {weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: isAmpm })
     return time
   }
 
-  private generate_alarm_entry(alarm: string) {
+  private generateAlarmEntry(alarm: string): string {
 
-    var formatted_time = this.format_alarm_time(alarm[JSON_FIRE_TIME], this.config.use_12hour)
+    const formattedTime = this.formatAlarmTime(alarm[JSON_FIRE_TIME], this.config.use_12hour)
 
-    var alarm_name = alarm[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + alarm[JSON_NAME] + "</span></div>" : ""
-    var recurrence = "";
-    var alarm_next = alarm[JSON_RECURRENCE] != null ? '<ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="'+ ICON_NEXT +'"></ha-icon>' : ""
+    const alarmName = alarm[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + alarm[JSON_NAME] + "</span></div>" : ""
+    let recurrence = "";
+    const alarmNext = alarm[JSON_RECURRENCE] != null ? '<ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="'+ ICON_NEXT +'"></ha-icon>' : ""
 
     if (alarm[JSON_RECURRENCE] != null && alarm[JSON_RECURRENCE].length >= 7) {
       recurrence = "all weekdays"
@@ -154,12 +142,12 @@ export class GoogleHomeCardNew extends LitElement {
       });
     }
 
-    var entry = `
+    const entry = `
     <div>
-      ${alarm_name}
+      ${alarmName}
       <div class="info" style="margin: -5px 0 -5px;">
         <div class="icon"><ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${ICON_ALARM}"></ha-icon></div>
-        <div class="alarm">${formatted_time}<span class="next">${alarm_next}${recurrence}</span></div>
+        <div class="alarm">${formattedTime}<span class="next">${alarmNext}${recurrence}</span></div>
       </div>
     </div>
     `;
@@ -167,27 +155,27 @@ export class GoogleHomeCardNew extends LitElement {
     return entry
   }
 
-  private generate_timer_entry(timer: string) {
+  private generateTimerEntry(timer: string): string {
 
-    var timer_icon = ICON_TIMER
+    let timerIcon = ICON_TIMER
 
-    var remaining_time = this.get_timedelta(timer[JSON_FIRE_TIME])
-    var formatted_time = this.format_to_human_readeble(remaining_time)
+    const remainingTime = this.getTimeDelta(timer[JSON_FIRE_TIME])
+    let formattedTime = this.formatToHumanReadeble(remainingTime)
 
-    if (Math.sign(Number(remaining_time)) == -1) {
-      formatted_time = TIMER_IS_DONE
-      timer_icon = ICON_ALARM_DONE
+    if (Math.sign(Number(remainingTime)) == -1) {
+      formattedTime = TIMER_IS_DONE
+      timerIcon = ICON_ALARM_DONE
     }
 
-    var timer_name = timer[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + timer[JSON_NAME] + "</span></div>" : ""
-    var alarm_time = this.config.show_fire_time ? "<span class='duration'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_ALARM_TIME + "'></ha-icon>" + timer[JSON_LOCAL_TIME].split(" ")[1] + "</span>" : ""
+    const timerName = timer[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + timer[JSON_NAME] + "</span></div>" : ""
+    const alarmTime = this.config.show_fire_time ? "<span class='duration'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_ALARM_TIME + "'></ha-icon>" + timer[JSON_LOCAL_TIME].split(" ")[1] + "</span>" : ""
 
-    var entry = `
+    const entry = `
     <div>
-      ${timer_name}
+      ${timerName}
       <div class="info" style="margin: -5px 0 -5px;">
-        <div class="icon"><ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${timer_icon}"></ha-icon></div>
-        <div class="timer">${formatted_time}<span class="duration"><ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>${timer[JSON_DURATION]}</span>${alarm_time}</div>
+        <div class="icon"><ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${timerIcon}"></ha-icon></div>
+        <div class="timer">${formattedTime}<span class="duration"><ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>${timer[JSON_DURATION]}</span>${alarmTime}</div>
       </div>
     </div>
     `;
@@ -195,19 +183,19 @@ export class GoogleHomeCardNew extends LitElement {
     return entry
   }
 
-  private generate_entries(alarms: string[], timers: string[]) {
+  private generateEntries(alarms: string[], timers: string[]): string[] {
 
-    var entries
+    const entries: string[] = [];
 
-    for (var alarm in alarms) {
-      entries.push(this.generate_alarm_entry(alarm))
+    for (const alarm in alarms) {
+      entries.push(this.generateAlarmEntry(alarm));
     }
 
-    for (var timer in timers) {
-      entries.push(this.generate_timer_entry(timer))
+    for (const timer in timers) {
+      entries.push(this.generateTimerEntry(timer));
     }
 
-    return entries
+    return entries;
   }
 
   private _handleAction(ev: ActionHandlerEvent): void {
@@ -237,6 +225,77 @@ export class GoogleHomeCardNew extends LitElement {
 
   // https://lit-element.polymer-project.org/guide/styles
   static get styles(): CSSResult {
-    return css``;
+    return css`
+    ha-card {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          cursor: pointer;
+          outline: none;
+        }
+        .header {
+          display: flex;
+          padding: 8px 16px 0;
+          justify-content: space-between;
+        }
+        .no-header {
+          padding: 16px 16px 0;
+        }
+        .name {
+          color: var(--secondary-text-color);
+          line-height: 40px;
+          font-weight: 500;
+          font-size: 16px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+        .icon {
+          color: var(--state-icon-color, #44739e);
+          line-height: 40px;
+        }
+        .info {
+          display: flex;
+          padding: 0px 16px 16px;
+          overflow: hidden;
+          margin-top: -4px;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          line-height: 28px;
+        }
+        .value {
+          font-size: 28px;
+          margin-right: 4px;
+        }
+        .timer {
+          font-size: 20px;
+          margin: 8px 4px -5px;
+        }
+        .alarm {
+          font-size: 20px;
+          margin: 8px 4px -5px;
+          text-transform: capitalize;
+        }
+        .title {
+          color: var(--secondary-text-color);
+          font-size: 1.2em;
+          padding: 0 5px 0 5px;
+          text-transform: capitalize;
+          font-weight: 500;
+        }
+        .duration {
+          font-size: 0.7em;
+          padding: 0 5px 0 5px;
+        }
+        .next {
+          font-size: 0.7em;
+          padding: 0 5px 15px 5px;
+          text-transform: lowercase;
+          overflow: hidden;
+          white-space: wrap;
+          text-overflow: ellipsis;
+        }
+    `;
   }
 }

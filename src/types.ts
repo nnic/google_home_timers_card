@@ -5,6 +5,9 @@ declare global {
     'googlehome-card-editor': LovelaceCardEditor;
     'hui-error-card': LovelaceCard;
   }
+  interface Window {
+    customCards: LovelaceCardConfig[];
+  }
 }
 
 // TODO Add your configuration elements here for type-checking

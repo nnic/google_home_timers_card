@@ -11,6 +11,7 @@ export default {
     dir: "./dist",
     format: "es",
   },
+  watch: { chokidar: { usePolling: true } },
   plugins: [
     resolve(),
     typescript(),
