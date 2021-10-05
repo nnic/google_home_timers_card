@@ -35,3 +35,13 @@ export interface Alarm {
   label: string;
   recurrence: number[];
 }
+
+export interface Timer {
+  timer_id: string;
+  fire_time: number;
+  local_time: string;
+  local_time_iso: string;
+  status: "none" | "set" | "ringing" | "paused";
+  label: string;
+  duration: number;
+}

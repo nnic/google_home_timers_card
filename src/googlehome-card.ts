@@ -4,7 +4,7 @@ import { HomeAssistant, hasConfigOrEntityChanged, hasAction, ActionHandlerEvent,
 
 import './editor';
 
-import type { Alarm, GoogleHomeCardConfig } from './types';
+import type { Alarm, GoogleHomeCardConfig, Timer } from './types';
 import { actionHandler } from './action-handler-directive';
 import { JSON_TIMERS, NO_TIMERS, JSON_ALARMS, CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_DURATION, JSON_FIRE_TIME, JSON_LOCAL_TIME, JSON_NAME, JSON_RECURRENCE, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
 import { localize } from './localize/localize';
@@ -168,11 +168,10 @@ export class GoogleHomeCardNew extends LitElement {
     return entry
   }
 
-  private generateTimerEntry(timer: string): TemplateResult {
+  private generateTimerEntry(timer: Timer): TemplateResult {
+    let timerIcon = ICON_TIMER;
 
-    let timerIcon = ICON_TIMER
-
-    const remainingTime = this.getTimeDelta(timer[JSON_FIRE_TIME])
+    const remainingTime = this.getTimeDelta(timer.fire_time)
     let formattedTime = this.formatToHumanReadeble(remainingTime)
 
     if (Math.sign(Number(remainingTime)) == -1) {
@@ -180,15 +179,26 @@ export class GoogleHomeCardNew extends LitElement {
       timerIcon = ICON_ALARM_DONE
     }
 
-    const timerName = timer[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + timer[JSON_NAME] + "</span></div>" : ""
-    const alarmTime = this.config.show_fire_time ? "<span class='duration'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_ALARM_TIME + "'></ha-icon>" + timer[JSON_LOCAL_TIME].split(" ")[1] + "</span>" : ""
+    const timerName = timer.label != null ? html`
+      <div style="margin: 0 15px 0 15px;">
+        <span class="title">
+          <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_LABEL}"></ha-icon>
+          ${timer.label}
+        </span>
+      </div>` : "";
+
+    const alarmTime = this.config.show_fire_time ? html`
+      <span class="duration">
+        <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_ALARM_TIME}"></ha-icon>
+        ${timer.local_time.split(" ")[1]}
+      </span>` : ""
 
     const entry = html`
     <div>
       ${timerName}
       <div class="info" style="margin: -5px 0 -5px;">
         <div class="icon"><ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${timerIcon}"></ha-icon></div>
-        <div class="timer">${formattedTime}<span class="duration"><ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>${timer[JSON_DURATION]}</span>${alarmTime}</div>
+        <div class="timer">${formattedTime}<span class="duration"><ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>${timer.duration}</span>${alarmTime}</div>
       </div>
     </div>
     `;
