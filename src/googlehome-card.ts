@@ -37,14 +37,14 @@ console.info(
 // This puts your card into the UI card picker dialog
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
-  type: 'googlehome-card',
-  name: 'Google Home Card',
+  type: 'googlehome-card-new',
+  name: 'Google Home Card New',
   description: 'A custom card for the Google Home community integration.',
 });
 
 // TODO Name your custom element
-@customElement('googlehome-card')
-export class GoogleHomeCard extends LitElement {
+@customElement('googlehome-card-new')
+export class GoogleHomeCardNew extends LitElement {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     return document.createElement('googlehome-card-editor');
   }
@@ -94,7 +94,7 @@ export class GoogleHomeCard extends LitElement {
     if (this.config.show_error) {
       return this._showError(localize('common.show_error'));
     }
-
+    // ${this.generate_entries()}
     return html`
       <ha-card
         .header=${this.config.name}
@@ -107,18 +107,18 @@ export class GoogleHomeCard extends LitElement {
         .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}
       >
         <div class="entries">
-          ${this.generate_entries()}
+          ${this.generate_entries([this.config.entity ?? ""], [])}
         </div>
       </ha-card>
     `;
   }
 
-  private get_alarms_or_timers_attirbute_from_entity(entityId: string) {
+  // private get_alarms_or_timers_attirbute_from_entity(entityId: string) {
 
-    var attributes = this.hass.states[entityId].state.attributes[];
+  //   var attributes = this.hass.states[entityId].state.attributes;
 
-    return attributes
-  }
+  //   return attributes
+  // }
 
   private get_timedelta(timestamp: number) {
     return new Date((timestamp * 1000) - Date.now());
@@ -178,7 +178,7 @@ export class GoogleHomeCard extends LitElement {
       formatted_time = TIMER_IS_DONE
       timer_icon = ICON_ALARM_DONE
     }
-    
+
     var timer_name = timer[JSON_NAME] != null ? "<div style='margin: 0 15px 0 15px;'><span class='title'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_LABEL + "'></ha-icon>" + timer[JSON_NAME] + "</span></div>" : ""
     var alarm_time = this.config.show_fire_time ? "<span class='duration'><ha-icon style='padding: 0 3px 0 0; --mdc-icon-size: 1.1em;' icon='" + ICON_ALARM_TIME + "'></ha-icon>" + timer[JSON_LOCAL_TIME].split(" ")[1] + "</span>" : ""
 
