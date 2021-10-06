@@ -1,15 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/camelcase */
-import {
-  LitElement,
-  html,
-  customElement,
-  property,
-  TemplateResult,
-  CSSResult,
-  css,
-  internalProperty,
-} from 'lit-element';
+import { LitElement, CSSResult, css, } from 'lit';
+import { html, TemplateResult } from 'lit/html';
+import { customElement, property, state } from 'lit/decorators';
 import { HomeAssistant, fireEvent, LovelaceCardEditor, ActionConfig } from 'custom-card-helpers';
 
 import { GoogleHomeCardConfig } from './types';
@@ -58,9 +51,9 @@ const options = {
 @customElement('googlehome-card-editor')
 export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass?: HomeAssistant;
-  @internalProperty() private _config?: GoogleHomeCardConfig;
-  @internalProperty() private _toggle?: boolean;
-  @internalProperty() private _helpers?: any;
+  @state() private _config?: GoogleHomeCardConfig;
+  @state() private _toggle?: boolean;
+  @state() private _helpers?: any;
   private _initialized = false;
 
   public setConfig(config: GoogleHomeCardConfig): void {

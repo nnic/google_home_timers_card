@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, customElement, property, CSSResult, TemplateResult, css, PropertyValues, internalProperty, } from 'lit-element';
-import { HomeAssistant, hasConfigOrEntityChanged, hasAction, ActionHandlerEvent, handleAction, LovelaceCardEditor, getLovelace, } from 'custom-card-helpers';
-
-import './editor';
-
-import type { Alarm, GoogleHomeCardConfig, Timer } from './types';
+import { ActionHandlerEvent, getLovelace, handleAction, hasAction, hasConfigOrEntityChanged, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
+import { css, CSSResult, LitElement, PropertyValues } from 'lit';
+import { customElement, property, state } from 'lit/decorators';
+import { html, TemplateResult } from 'lit/html';
 import { actionHandler } from './action-handler-directive';
-import { JSON_TIMERS, NO_TIMERS, JSON_ALARMS, CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_DURATION, JSON_FIRE_TIME, JSON_LOCAL_TIME, JSON_NAME, JSON_RECURRENCE, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
+import { CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_ALARMS, JSON_NAME, JSON_RECURRENCE, JSON_TIMERS, NO_TIMERS, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
+import './editor';
 import { localize } from './localize/localize';
+import type { Alarm, GoogleHomeCardConfig, Timer } from './types';
+
+
 
 /* eslint no-console: 0 */
 console.info(
@@ -38,7 +40,8 @@ export class GoogleHomeCardNew extends LitElement {
   // TODO Add any properities that should cause your element to re-render here
   // https://lit-element.polymer-project.org/guide/properties
   @property({ attribute: false }) public hass!: HomeAssistant;
-  @internalProperty() private config!: GoogleHomeCardConfig;
+
+  @state() private config!: GoogleHomeCardConfig;
 
   // https://lit-element.polymer-project.org/guide/properties#accessors-custom
   public setConfig(config: GoogleHomeCardConfig): void {
@@ -68,7 +71,7 @@ export class GoogleHomeCardNew extends LitElement {
   }
 
   // https://lit-element.polymer-project.org/guide/templates
-  protected render(): TemplateResult | void {
+  protected render(): TemplateResult {
     // TODO Check for stateObj or other necessary things and render a warning if missing
     if (this.config.show_warning) {
       return this._showWarning(localize('common.show_warning'));
