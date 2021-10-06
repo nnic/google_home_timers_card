@@ -1,9 +1,11 @@
 import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
+import { TimerPanel } from './googlehome-card';
 
 declare global {
   interface HTMLElementTagNameMap {
     'googlehome-card-editor': LovelaceCardEditor;
     'hui-error-card': LovelaceCard;
+    'timer-element': TimerPanel;
   }
   interface Window {
     customCards: LovelaceCardConfig[];

@@ -27,14 +27,15 @@ export const ICON_LABEL = "mdi:label-variant";
 export const ICON_NEXT = "mdi:calendar-week";
 
 // TIME
-export const STRING_HOURS = " h. ";
-export const STRING_MINUTES = " mins. ";
-export const STRING_SECONDS = " secs.";
-export const WEEKDAYS = { 1 : "Mon",
-             2 : "Tue",
-             3 : "Wed",
-             4 : "Thu",
-             5 : "Fri",
-             6 : "Sat",
-             0 : "Sun"
-           };
+export const STRING_HOURS = "h ";
+export const STRING_MINUTES = "m ";
+export const STRING_SECONDS = "s";
+export const WEEKDAYS = {
+    1: "Mon",
+    2: "Tue",
+    3: "Wed",
+    4: "Thu",
+    5: "Fri",
+    6: "Sat",
+    0: "Sun"
+};

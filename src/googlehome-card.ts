@@ -2,6 +2,7 @@
 import { ActionHandlerEvent, getLovelace, handleAction, hasAction, hasConfigOrEntityChanged, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { css, CSSResult, LitElement, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
+import { asyncReplace } from 'lit/directives/async-replace';
 import { html, TemplateResult } from 'lit/html';
 import { actionHandler } from './action-handler-directive';
 import { CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_ALARMS, JSON_NAME, JSON_RECURRENCE, JSON_TIMERS, NO_TIMERS, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
@@ -25,6 +26,72 @@ window.customCards.push({
   name: 'Google Home Card New',
   description: 'A custom card for the Google Home community integration.',
 });
+
+const formatToHumanReadeble = (rt: Date): string => {
+  const h = rt.getUTCHours() > 0 ? rt.getUTCHours() + STRING_HOURS : ""
+  const m = rt.getUTCMinutes() < 10 && rt.getUTCHours() > 1 ? "0" + rt.getUTCMinutes() : rt.getUTCMinutes();
+  const s = rt.getUTCSeconds() < 10 ? "0" + rt.getUTCSeconds() : rt.getUTCSeconds();
+  const ts = h + m + STRING_MINUTES + s + STRING_SECONDS;
+  return ts;
+}
+
+async function* countDown(timestamp: number): AsyncGenerator<string, void, string> {
+  const timeStampMS = timestamp * 1000;
+  while (timeStampMS > Date.now()) {
+    const delta = new Date(timeStampMS - Date.now());
+    yield formatToHumanReadeble(delta);
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+}
+
+
+@customElement("timer-panel")
+export class TimerPanel extends LitElement {
+  constructor() {
+    super();
+    this.countdownTimer = countDown(this.fireTime);
+  }
+
+  @property({ type: Number })
+  fireTime = 0;
+
+  @property()
+  duration = "";
+
+  @state()
+  private countdownTimer: any;
+
+  requestUpdate(name?: PropertyKey, oldValue?: unknown) {
+    if (name && name == "fireTime" && this.fireTime !== oldValue) {
+      this.countdownTimer = countDown(Number(this.fireTime));
+    }
+    return super.requestUpdate(name, oldValue);
+  }
+
+  render() {
+    return html`
+        <div class="timer">${asyncReplace(this.countdownTimer)}
+          <span class="duration">
+            <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>
+            ${this.duration}
+          </span>
+        </div>
+        `;
+  }
+
+  static get styles(): CSSResult {
+    return css`
+      .timer {
+        font-size: 20px;
+        margin: 8px 4px -5px;
+      }
+      .duration {
+          font-size: 0.7em;
+          padding: 0 5px 0 5px;
+        }
+`}
+
+}
 
 // TODO Name your custom element
 @customElement('googlehome-card-new')
@@ -87,20 +154,15 @@ export class GoogleHomeCardNew extends LitElement {
     const entries = this.generateEntries(stateAlarms.attributes[JSON_ALARMS], stateTimers.attributes[JSON_TIMERS]);
 
     return html`
-      <ha-card
-        .header=${this.config.name}
-        @action=${this._handleAction}
-        .actionHandler=${actionHandler({
-      hasHold: hasAction(this.config.hold_action),
-      hasDoubleClick: hasAction(this.config.double_tap_action),
-    })}
-        tabindex="0"
-        .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}
-      >
+      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({
+      hasHold:
+        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action),
+    })} tabindex="0"
+        .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}>
         <div class="entries">
-        ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
-        <span class="value">${NO_TIMERS}</span>
-      </div>`}
+          ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
+            <span class="value">${NO_TIMERS}</span>
+          </div>`}
         </div>
       </ha-card>
     `;
@@ -119,15 +181,15 @@ export class GoogleHomeCardNew extends LitElement {
 
   private formatToHumanReadeble(rt: Date): string {
     const h = rt.getUTCHours() > 0 ? rt.getUTCHours() + STRING_HOURS : ""
-    const m = rt.getUTCMinutes() < 10  && rt.getUTCHours() > 1 ? "0"+ rt.getUTCMinutes() : rt.getUTCMinutes();
-    const s = rt.getUTCSeconds() < 10 ? "0"+ rt.getUTCSeconds() : rt.getUTCSeconds();
+    const m = rt.getUTCMinutes() < 10 && rt.getUTCHours() > 1 ? "0" + rt.getUTCMinutes() : rt.getUTCMinutes();
+    const s = rt.getUTCSeconds() < 10 ? "0" + rt.getUTCSeconds() : rt.getUTCSeconds();
     const ts = h + m + STRING_MINUTES + s + STRING_SECONDS;
     return ts;
   }
 
   private formatAlarmTime(ts: number, isAmpm?: boolean): string {
     const d = new Date(ts * 1000);
-    const time = d.toLocaleString(window.navigator.language, {weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: isAmpm })
+    const time = d.toLocaleString(window.navigator.language, { weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: isAmpm })
     return time
   }
 
@@ -139,8 +201,8 @@ export class GoogleHomeCardNew extends LitElement {
       <div style="margin: 0 15px 0 15px;">
         <span class="title">
           <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_LABEL}"></ha-icon>
-            ${alarm[JSON_NAME]}
-          </span>
+          ${alarm[JSON_NAME]}
+        </span>
       </div>` : "";
 
     let recurrence = "";
@@ -159,10 +221,12 @@ export class GoogleHomeCardNew extends LitElement {
     }
 
     const entry = html`
-    <div>
+    <div class="status-${alarm.status}">
       ${alarmName}
       <div class="info" style="margin: -5px 0 -5px;">
-        <div class="icon"><ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${ICON_ALARM}"></ha-icon></div>
+        <div class="icon">
+          <ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${ICON_ALARM}"></ha-icon>
+        </div>
         <div class="alarm">${formattedTime}<span class="next">${alarmNext}${recurrence}</span></div>
       </div>
     </div>
@@ -200,8 +264,12 @@ export class GoogleHomeCardNew extends LitElement {
     <div>
       ${timerName}
       <div class="info" style="margin: -5px 0 -5px;">
-        <div class="icon"><ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${timerIcon}"></ha-icon></div>
-        <div class="timer">${formattedTime}<span class="duration"><ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>${timer.duration}</span>${alarmTime}</div>
+        <div class="icon">
+          <ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${timerIcon}"></ha-icon>
+        </div>
+    
+        <timer-panel duration=${timer.duration} fireTime=${timer.fire_time}></timer-panel>
+        <!-- <div class="timer">${formattedTime}<span class="duration"><ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>${timer.duration}</span>${alarmTime}</div> -->
       </div>
     </div>
     `;
@@ -294,10 +362,6 @@ export class GoogleHomeCardNew extends LitElement {
           font-size: 28px;
           margin-right: 4px;
         }
-        .timer {
-          font-size: 20px;
-          margin: 8px 4px -5px;
-        }
         .alarm {
           font-size: 20px;
           margin: 8px 4px -5px;
@@ -310,16 +374,24 @@ export class GoogleHomeCardNew extends LitElement {
           text-transform: capitalize;
           font-weight: 500;
         }
-        .duration {
-          font-size: 0.7em;
-          padding: 0 5px 0 5px;
-        }
         .next {
           font-size: 0.7em;
           padding: 0 5px 15px 5px;
           overflow: hidden;
           white-space: wrap;
           text-overflow: ellipsis;
+        }
+
+        .status-inactive {
+          color: var(--disabled-text-color);
+        }
+
+        .status-inactive .icon {
+          color: var(--disabled-text-color);
+        }
+
+        .status-inactive .title {
+          color: var(--disabled-text-color);
         }
     `;
   }
