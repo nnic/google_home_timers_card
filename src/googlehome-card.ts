@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionHandlerEvent, getLovelace, handleAction, hasAction, hasConfigOrEntityChanged, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
+import { ActionHandlerEvent, getLovelace, handleAction, hasAction, hasConfigOrEntityChanged, HomeAssistant, LovelaceCardEditor, } from 'custom-card-helpers';
 import { css, CSSResult, LitElement, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators';
-import { asyncReplace } from 'lit/directives/async-replace';
 import { html, TemplateResult } from 'lit/html';
 import { actionHandler } from './action-handler-directive';
-import { CARD_VERSION, ICON_ALARM, ICON_ALARM_DONE, ICON_ALARM_TIME, ICON_DURATION, ICON_LABEL, ICON_NEXT, ICON_TIMER, JSON_ALARMS, JSON_NAME, JSON_RECURRENCE, JSON_TIMERS, NO_TIMERS, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, TIMER_IS_DONE, WEEKDAYS } from './const';
+import { CARD_VERSION, ICON_ALARM, ICON_LABEL, ICON_NEXT, JSON_ALARMS, JSON_NAME, JSON_RECURRENCE, JSON_TIMERS, NO_TIMERS, STRING_HOURS, STRING_MINUTES, STRING_SECONDS, WEEKDAYS } from './const';
 import './editor';
 import { localize } from './localize/localize';
 import type { Alarm, GoogleHomeCardConfig, Timer } from './types';
 
-
+import './timer-panel';
 
 /* eslint no-console: 0 */
 console.info(
@@ -27,71 +26,6 @@ window.customCards.push({
   description: 'A custom card for the Google Home community integration.',
 });
 
-const formatToHumanReadeble = (rt: Date): string => {
-  const h = rt.getUTCHours() > 0 ? rt.getUTCHours() + STRING_HOURS : ""
-  const m = rt.getUTCMinutes() < 10 && rt.getUTCHours() > 1 ? "0" + rt.getUTCMinutes() : rt.getUTCMinutes();
-  const s = rt.getUTCSeconds() < 10 ? "0" + rt.getUTCSeconds() : rt.getUTCSeconds();
-  const ts = h + m + STRING_MINUTES + s + STRING_SECONDS;
-  return ts;
-}
-
-async function* countDown(timestamp: number): AsyncGenerator<string, void, string> {
-  const timeStampMS = timestamp * 1000;
-  while (timeStampMS > Date.now()) {
-    const delta = new Date(timeStampMS - Date.now());
-    yield formatToHumanReadeble(delta);
-    await new Promise((r) => setTimeout(r, 1000));
-  }
-}
-
-
-@customElement("timer-panel")
-export class TimerPanel extends LitElement {
-  constructor() {
-    super();
-    this.countdownTimer = countDown(this.fireTime);
-  }
-
-  @property({ type: Number })
-  fireTime = 0;
-
-  @property()
-  duration = "";
-
-  @state()
-  private countdownTimer: any;
-
-  requestUpdate(name?: PropertyKey, oldValue?: unknown) {
-    if (name && name == "fireTime" && this.fireTime !== oldValue) {
-      this.countdownTimer = countDown(Number(this.fireTime));
-    }
-    return super.requestUpdate(name, oldValue);
-  }
-
-  render() {
-    return html`
-        <div class="timer">${asyncReplace(this.countdownTimer)}
-          <span class="duration">
-            <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>
-            ${this.duration}
-          </span>
-        </div>
-        `;
-  }
-
-  static get styles(): CSSResult {
-    return css`
-      .timer {
-        font-size: 20px;
-        margin: 8px 4px -5px;
-      }
-      .duration {
-          font-size: 0.7em;
-          padding: 0 5px 0 5px;
-        }
-`}
-
-}
 
 // TODO Name your custom element
 @customElement('googlehome-card-new')
@@ -235,47 +169,8 @@ export class GoogleHomeCardNew extends LitElement {
     return entry
   }
 
-  private generateTimerEntry(timer: Timer): TemplateResult {
-    let timerIcon = ICON_TIMER;
-
-    const remainingTime = this.getTimeDelta(timer.fire_time)
-    let formattedTime = this.formatToHumanReadeble(remainingTime)
-
-    if (Math.sign(Number(remainingTime)) == -1) {
-      formattedTime = TIMER_IS_DONE
-      timerIcon = ICON_ALARM_DONE
-    }
-
-    const timerName = timer.label != null ? html`
-      <div style="margin: 0 15px 0 15px;">
-        <span class="title">
-          <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_LABEL}"></ha-icon>
-          ${timer.label}
-        </span>
-      </div>` : "";
-
-    const alarmTime = this.config.show_fire_time ? html`
-      <span class="duration">
-        <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_ALARM_TIME}"></ha-icon>
-        ${timer.local_time.split(" ")[1]}
-      </span>` : ""
-
-    const entry = html`
-    <div>
-      ${timerName}
-      <div class="info" style="margin: -5px 0 -5px;">
-        <div class="icon">
-          <ha-icon style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${timerIcon}"></ha-icon>
-        </div>
-    
-        <timer-panel duration=${timer.duration} fireTime=${timer.fire_time}></timer-panel>
-        <!-- <div class="timer">${formattedTime}<span class="duration"><ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_DURATION}"></ha-icon>${timer.duration}</span>${alarmTime}</div> -->
-      </div>
-    </div>
-    `;
-
-    return entry
-  }
+  private generateTimerEntry = (timer: Timer): TemplateResult => html`
+    <timer-panel .timer=${timer} .showFireTime=${this.config.showFireTime}></timer-panel>`;
 
   private generateEntries(alarms: Alarm[] = [], timers: any[] = []): TemplateResult[] {
 
@@ -348,6 +243,10 @@ export class GoogleHomeCardNew extends LitElement {
         .icon {
           color: var(--state-icon-color, #44739e);
           line-height: 40px;
+        }
+        .entries {
+          padding: 16px;
+          padding-top: 0px;
         }
         .info {
           display: flex;

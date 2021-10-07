@@ -86,6 +86,10 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
     return this._config?.use12hour || false;
   }
 
+  get _showFireTime(): boolean {
+    return this._config?.showFireTime || false;
+  }
+
   get _show_warning(): boolean {
     return this._config?.show_warning || false;
   }
@@ -163,7 +167,14 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
                     @change=${this._valueChanged}
                   ></ha-switch>
                 </ha-formfield>
-                </div>
+                <ha-formfield .label=${`Show timer fire time`}>
+                  <ha-switch
+                    .checked=${this._showFireTime}
+                    .configValue=${'showFireTime'}
+                    @change=${this._valueChanged}
+                  ></ha-switch>
+                </ha-formfield>
+            </div>
             `
           : ''}
         <div class="option" @click=${this._toggleOption} .option=${'actions'}>

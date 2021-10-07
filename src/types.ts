@@ -19,6 +19,7 @@ export interface GoogleHomeCardConfig extends LovelaceCardConfig {
   entity?: string;
   timerEntity?: string;
   use12hour?: boolean;
+  showFireTime?: boolean;
 
   show_warning?: boolean;
   show_error?: boolean;
