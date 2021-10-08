@@ -11,6 +11,7 @@ import type { Alarm, GoogleHomeCardConfig, Timer } from './types';
 
 import './timer-panel';
 import './alarm-panel';
+import { HassEntity } from 'home-assistant-js-websocket';
 
 /* eslint no-console: 0 */
 console.info(
@@ -38,9 +39,38 @@ export class GoogleHomeCardNew extends LitElement {
   }
 
   // https://lit-element.polymer-project.org/guide/properties
-  @property({ attribute: false }) public hass!: HomeAssistant;
+  //@property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private config!: GoogleHomeCardConfig;
+
+  @state() private alarms?: HassEntity;
+
+  @state() private timers?: HassEntity;
+
+  private _hass!: HomeAssistant;
+
+  public set hass(hass: HomeAssistant) {
+    this._hass = hass;
+
+    let updated = false;
+    const timers = hass.states[this.config?.timerEntity ?? ""];
+    const alarms = hass.states[this.config?.entity ?? ""];
+
+    if (timers?.last_updated !== this.timers?.last_updated) {
+      updated = true;
+      this.timers = hass.states[this.config?.timerEntity ?? ""];
+    }
+    if (alarms?.last_updated !== this.alarms?.last_updated) {
+      updated = true;
+      this.alarms = hass.states[this.config?.entity ?? ""];
+    }
+    if (updated) {
+      this.requestUpdate();
+    }
+  }
+
+  @property({ attribute: false })
+  public get hass() { return this._hass; }
 
   // https://lit-element.polymer-project.org/guide/properties#accessors-custom
   public setConfig(config: GoogleHomeCardConfig): void {
@@ -71,7 +101,7 @@ export class GoogleHomeCardNew extends LitElement {
 
   // https://lit-element.polymer-project.org/guide/templates
   protected render(): TemplateResult | undefined {
-    // TODO Check for stateObj or other necessary things and render a warning if missing
+
     if (this.config.show_warning) {
       return this._showWarning(localize('common.show_warning'));
     }
@@ -84,10 +114,7 @@ export class GoogleHomeCardNew extends LitElement {
       return this._showWarning(localize('common.no_entities_warning'));
     }
 
-    const stateAlarms = this.hass.states[this.config.entity ?? ""];
-    const stateTimers = this.hass.states[this.config.timerEntity ?? ""];
-
-    const entries = this.generateEntries(stateAlarms?.attributes[JSON_ALARMS], stateTimers?.attributes[JSON_TIMERS]);
+    const entries = this.generateEntries(this.alarms?.attributes[JSON_ALARMS], this.timers?.attributes[JSON_TIMERS]);
 
     if (this.config.hideCardIfNoAlarmOrTimers && entries?.length === 0) {
       return;
@@ -110,7 +137,7 @@ export class GoogleHomeCardNew extends LitElement {
     <alarm-element .alarm=${alarm} .config=${this.config}></alarm-element>`;
 
   private generateTimerEntry = (timer: Timer): TemplateResult => html`
-    <timer-panel .timer=${timer} .showFireTime=${this.config.showFireTime}></timer-panel>`;
+    <timer-panel .timer=${timer} .config=${this.config}></timer-panel>`;
 
   private generateEntries(alarms: Alarm[] = [], timers: any[] = []): TemplateResult[] {
 

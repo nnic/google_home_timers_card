@@ -1,4 +1,4 @@
-import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
+import { LovelaceCard, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
 import { TimerPanel } from './timer-panel';
 import { AlarmPanel } from './alarm-panel';
 
@@ -24,13 +24,6 @@ export interface GoogleHomeCardConfig extends LovelaceCardConfig {
   hideInactiveTimers?: boolean;
   hideInactiveAlarms?: boolean;
   hideCardIfNoAlarmOrTimers?: boolean;
-
-  show_warning?: boolean;
-  show_error?: boolean;
-  test_gui?: boolean;
-  tap_action?: ActionConfig;
-  hold_action?: ActionConfig;
-  double_tap_action?: ActionConfig;
 }
 
 export interface Alarm {

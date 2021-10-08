@@ -17,7 +17,7 @@ export class TimerPanel extends LitElement {
         return this.timer?.label != null ? html`
                 <div>
                     <span class="title">
-                        <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_LABEL}"></ha-icon>
+                        <ha-icon style="padding: 0 25px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_LABEL}"></ha-icon>
                         ${this.timer.label}
                     </span>
                 </div>` : "";
@@ -102,7 +102,7 @@ export class TimerPanel extends LitElement {
           .title {
             color: var(--secondary-text-color);
             font-size: 1.2em;
-            padding: 0 10px;
+            padding: 0 8px;
             text-transform: capitalize;
             font-weight: 500;
           }
