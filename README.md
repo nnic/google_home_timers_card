@@ -3,6 +3,7 @@
 ### As the main integration does not work for me anymore, i won't be updating this. Feel free to fork, copy or ask to be a collaborator here if you want to maintain this.
 
 ---
+
 ## Original Readme
 
 <p align="center">
@@ -20,7 +21,6 @@ It will not be a smooth countdown (It will jump some seconds), but it will alway
 ### Prerequisites
 
 Make sure you have Home-Assistant [Google home](https://github.com/leikoilja/ha-google-home) integration installed.
-
 
 ### HACS
 
@@ -53,17 +53,17 @@ The countdown is done client-side. This means that it will always fire at the co
 
 ### Options
 
-| Name | Type | Default	| Supported options	| Description |
-| --- | --- | --- | --- | --- |
-`type`|string|Required|`custom:googletimers-card`| Type of the card.
-`entity`|string|Required|`sensor.kitchen_timers`| Has to be a timer sensor from google_home integration.
-`title`|string|Optional|Any string that you want| Name displayed in the header. Defaults to the entity name.
-`icon`|string|Optional|`mdi:kitchen`| Icon displayed in the header. Defaults to the entity icon.
-`hide_header`|boolean|`false`|`true` or `false`| Whether to show the header or not.
-`show_fire_time`|boolean|`false`|`true` or `false`| Whether to also show the time when it's done.
-`alarms_entity`|string|Optional|`sensor.kitchen_alarms`| To show alarms as well.
+| Name             | Type    | Default  | Supported options          | Description                                                |
+| ---------------- | ------- | -------- | -------------------------- | ---------------------------------------------------------- |
+| `type`           | string  | Required | `custom:googletimers-card` | Type of the card.                                          |
+| `entity`         | string  | Required | `sensor.kitchen_timers`    | Has to be a timer sensor from google_home integration.     |
+| `title`          | string  | Optional | Any string that you want   | Name displayed in the header. Defaults to the entity name. |
+| `icon`           | string  | Optional | `mdi:kitchen`              | Icon displayed in the header. Defaults to the entity icon. |
+| `hide_header`    | boolean | `false`  | `true` or `false`          | Whether to show the header or not.                         |
+| `show_fire_time` | boolean | `false`  | `true` or `false`          | Whether to also show the time when it's done.              |
+| `alarms_entity`  | string  | Optional | `sensor.kitchen_alarms`    | To show alarms as well.                                    |
 
-### Example 
+### Example
 
 ```yaml
 type: 'custom:googletimers-card'
@@ -71,6 +71,7 @@ entity: sensor.kitchen_timers
 alarms_entity: sensor.kitchen_alarms
 title: Kitchen
 ```
+
 <p align="center">
   <img src="/images/example.png">
 </p>
