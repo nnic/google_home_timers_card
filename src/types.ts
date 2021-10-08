@@ -14,7 +14,6 @@ declare global {
   }
 }
 
-// TODO Add your configuration elements here for type-checking
 export interface GoogleHomeCardConfig extends LovelaceCardConfig {
   type: string;
   name?: string;
@@ -24,6 +23,7 @@ export interface GoogleHomeCardConfig extends LovelaceCardConfig {
   showFireTime?: boolean;
   hideInactiveTimers?: boolean;
   hideInactiveAlarms?: boolean;
+  hideCardIfNoAlarmOrTimers?: boolean;
 
   show_warning?: boolean;
   show_error?: boolean;

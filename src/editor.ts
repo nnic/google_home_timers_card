@@ -98,6 +98,10 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
     return this._config?.hideInactiveAlarms || false;
   }
 
+  get _hideCardIfNoAlarmOrTimers(): boolean {
+    return this._config?.hideCardIfNoAlarmOrTimers || false;
+  }
+
   get _show_warning(): boolean {
     return this._config?.show_warning || false;
   }
@@ -158,6 +162,8 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
                     @change="${this._valueChanged}"
                     allow-custom-entity></ha-entity-picker>
 
+
+                    <br/>
               <ha-formfield .label=${`Use 12 hour`}>
                   <ha-switch
                     .checked=${this._use12hour}
@@ -186,6 +192,14 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
                   <ha-switch
                     .checked=${this._hideInactiveTimers}
                     .configValue=${'hideInactiveTimers'}
+                    @change=${this._valueChanged}
+                  ></ha-switch>
+                </ha-formfield>
+                <br/>
+                <ha-formfield .label=${`Hide card if no active alarms or timers`}>
+                  <ha-switch
+                    .checked=${this._hideCardIfNoAlarmOrTimers}
+                    .configValue=${'hideCardIfNoAlarmOrTimers'}
                     @change=${this._valueChanged}
                   ></ha-switch>
                 </ha-formfield>

@@ -70,7 +70,7 @@ export class GoogleHomeCardNew extends LitElement {
   }
 
   // https://lit-element.polymer-project.org/guide/templates
-  protected render(): TemplateResult {
+  protected render(): TemplateResult | undefined {
     // TODO Check for stateObj or other necessary things and render a warning if missing
     if (this.config.show_warning) {
       return this._showWarning(localize('common.show_warning'));
@@ -89,12 +89,14 @@ export class GoogleHomeCardNew extends LitElement {
 
     const entries = this.generateEntries(stateAlarms?.attributes[JSON_ALARMS], stateTimers?.attributes[JSON_TIMERS]);
 
+    if (this.config.hideCardIfNoAlarmOrTimers && entries?.length === 0) {
+      return;
+    }
+
     return html`
-      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({
-      hasHold:
-        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action),
-    })} tabindex="0"
-        .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}>
+      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({ hasHold:
+        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action), })} tabindex="0"
+        .label=${`Google Home: ${this.config.entity || 'No Entity Defined' }`}>
         <div class="entries">
           ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
             <span class="value">${NO_TIMERS}</span>
