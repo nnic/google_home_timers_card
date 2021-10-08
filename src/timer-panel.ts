@@ -80,8 +80,8 @@ export class TimerPanel extends LitElement {
           font-size: 20px;
           display: flex;
           margin-left: 16px;
-    margin-right: 8px;
-    align-items: center;
+        margin-right: 8px;
+        align-items: center;
         }
         .timeLeft {
             padding-right: 16px;

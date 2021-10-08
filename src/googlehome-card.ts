@@ -27,8 +27,6 @@ window.customCards.push({
   description: 'A custom card for the Google Home community integration.',
 });
 
-
-// TODO Name your custom element
 @customElement('googlehome-card-new')
 export class GoogleHomeCardNew extends LitElement {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
@@ -39,7 +37,6 @@ export class GoogleHomeCardNew extends LitElement {
     return {};
   }
 
-  // TODO Add any properities that should cause your element to re-render here
   // https://lit-element.polymer-project.org/guide/properties
   @property({ attribute: false }) public hass!: HomeAssistant;
 
@@ -93,9 +90,11 @@ export class GoogleHomeCardNew extends LitElement {
     const entries = this.generateEntries(stateAlarms?.attributes[JSON_ALARMS], stateTimers?.attributes[JSON_TIMERS]);
 
     return html`
-      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({ hasHold:
-        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action), })} tabindex="0"
-        .label=${`Google Home: ${this.config.entity || 'No Entity Defined' }`}>
+      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({
+      hasHold:
+        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action),
+    })} tabindex="0"
+        .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}>
         <div class="entries">
           ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
             <span class="value">${NO_TIMERS}</span>

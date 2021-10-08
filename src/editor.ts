@@ -3,7 +3,7 @@
 import { LitElement, CSSResult, css, } from 'lit';
 import { html, TemplateResult } from 'lit/html';
 import { customElement, property, state } from 'lit/decorators';
-import { HomeAssistant, fireEvent, LovelaceCardEditor, ActionConfig } from 'custom-card-helpers';
+import { HomeAssistant, fireEvent, LovelaceCardEditor, ActionConfig,  } from 'custom-card-helpers';
 
 import { GoogleHomeCardConfig } from './types';
 
@@ -127,7 +127,7 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
     this._helpers.importMoreInfoControl('climate');
 
     // You can restrict on domain type
-    const entities = Object.keys(this.hass.states).filter(eid => eid.substr(0, eid.indexOf('.')) === 'sensor');
+    // const entities = Object.keys(this.hass.states).filter(eid => eid.substr(0, eid.indexOf('.')) === 'sensor');
 
     return html`
       <div class="card-config">
@@ -141,32 +141,22 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
         ${options.required.show
           ? html`
               <div class="values">
-                <paper-dropdown-menu
-                  label="Alarm Entity ${this._config?.timerEntity === undefined ? "(Required)" : ""}"
-                  @value-changed=${this._valueChanged}
-                  .configValue=${'entity'}
-                >
-                  <paper-listbox slot="dropdown-content" .selected=${entities.indexOf(this._entity)}>
-                    ${entities.map(entity => {
-                      return html`
-                        <paper-item>${entity}</paper-item>
-                      `;
-                    })}
-                  </paper-listbox>
-                </paper-dropdown-menu>
-                <paper-dropdown-menu
-                  label="Timer Entity ${this._config?.entity === undefined ? "(Required)" : ""}"
-                  @value-changed=${this._valueChanged}
-                  .configValue=${'timerEntity'}
-                >
-                  <paper-listbox slot="dropdown-content" .selected=${entities.indexOf(this._timerEntity)}>
-                    ${entities.map(entity => {
-                      return html`
-                        <paper-item>${entity}</paper-item>
-                      `;
-                    })}
-                  </paper-listbox>
-                </paper-dropdown-menu>
+                  <ha-entity-picker
+                    label="Alarm Entity ${this._config?.timerEntity === undefined ? "(Required)" : ""}"
+                    .hass="${this.hass}"
+                    .value="${this._entity}"
+                    .configValue=${"entity"}
+                    .includeDomains=${["sensor"]}
+                    @change="${this._valueChanged}"
+                    allow-custom-entity></ha-entity-picker>
+                  <ha-entity-picker
+                    label="Timer Entity ${this._config?.entity === undefined ? "(Required)" : ""}"
+                    .hass="${this.hass}"
+                    .value="${this._timerEntity}"
+                    .configValue=${"timerEntity"}
+                    .includeDomains=${["sensor"]}
+                    @change="${this._valueChanged}"
+                    allow-custom-entity></ha-entity-picker>
 
               <ha-formfield .label=${`Use 12 hour`}>
                   <ha-switch
@@ -329,22 +319,20 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
       return;
     }
     const target = ev.target;
-    console.log("Test");
     if (this[`_${target.configValue}`] === target.value) {
       return;
     }
-    console.log("Test 2");
     if (target.configValue !== undefined) {
-      console.log("Target checked: " + target.checked);
       if (target.value === '') {
-        delete this._config[target.configValue];
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [target.configValue]: removed, ...rest } = this._config;
+        // delete this._config[target.configValue];
+        this._config = rest as GoogleHomeCardConfig;
       } else {
-        console.log("Config Before: ", this._config);
         this._config = {
           ...this._config,
           [target.configValue]: target.checked !== undefined ? target.checked : target.value,
         };
-        console.log("Config After: ", this._config);
       }
     }
     fireEvent(this, 'config-changed', { config: this._config });

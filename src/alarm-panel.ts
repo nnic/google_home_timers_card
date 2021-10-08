@@ -99,6 +99,10 @@ export class AlarmPanel extends LitElement {
         }
         .alarm {
           font-size: 20px;
+          display: flex;
+          margin-left: 16px;
+          margin-right: 8px;
+          align-items: center;
         }
         .title {
           color: var(--secondary-text-color);
@@ -109,10 +113,14 @@ export class AlarmPanel extends LitElement {
         }
         .next {
           font-size: 0.7em;
-          padding: 0 5px 15px 5px;
+          line-height: normal;
+          padding-right: 16px;
           overflow: hidden;
           white-space: wrap;
           text-overflow: ellipsis;
+        }
+        .formattedTime {
+          padding-right: 16px;
         }
   `}
 
