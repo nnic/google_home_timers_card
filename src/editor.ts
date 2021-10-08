@@ -90,6 +90,14 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
     return this._config?.showFireTime || false;
   }
 
+  get _hideInactiveTimers(): boolean {
+    return this._config?.hideInactiveTimers || false;
+  }
+
+  get _hideInactiveAlarms(): boolean {
+    return this._config?.hideInactiveAlarms || false;
+  }
+
   get _show_warning(): boolean {
     return this._config?.show_warning || false;
   }
@@ -167,10 +175,27 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
                     @change=${this._valueChanged}
                   ></ha-switch>
                 </ha-formfield>
+                <br/>
                 <ha-formfield .label=${`Show timer fire time`}>
                   <ha-switch
                     .checked=${this._showFireTime}
                     .configValue=${'showFireTime'}
+                    @change=${this._valueChanged}
+                  ></ha-switch>
+                </ha-formfield>
+                <br/>
+                <ha-formfield .label=${`Hide inactive alarms`}>
+                  <ha-switch
+                    .checked=${this._hideInactiveAlarms}
+                    .configValue=${'hideInactiveAlarms'}
+                    @change=${this._valueChanged}
+                  ></ha-switch>
+                </ha-formfield>
+                <br/>
+                <ha-formfield .label=${`Hide inactive timers`}>
+                  <ha-switch
+                    .checked=${this._hideInactiveTimers}
+                    .configValue=${'hideInactiveTimers'}
                     @change=${this._valueChanged}
                   ></ha-switch>
                 </ha-formfield>

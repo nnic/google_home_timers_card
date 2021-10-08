@@ -1,11 +1,13 @@
 import { ActionConfig, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
-import { TimerPanel } from './googlehome-card';
+import { TimerPanel } from './timer-panel';
+import { AlarmPanel } from './alarm-panel';
 
 declare global {
   interface HTMLElementTagNameMap {
     'googlehome-card-editor': LovelaceCardEditor;
     'hui-error-card': LovelaceCard;
     'timer-element': TimerPanel;
+    'alarm-element': AlarmPanel;
   }
   interface Window {
     customCards: LovelaceCardConfig[];
@@ -20,6 +22,8 @@ export interface GoogleHomeCardConfig extends LovelaceCardConfig {
   timerEntity?: string;
   use12hour?: boolean;
   showFireTime?: boolean;
+  hideInactiveTimers?: boolean;
+  hideInactiveAlarms?: boolean;
 
   show_warning?: boolean;
   show_error?: boolean;

@@ -1,7 +1,7 @@
 import { LitElement, html, CSSResult, css } from "lit";
 import { customElement, property } from "lit/decorators";
 import { ICON_TIMER, ICON_ALARM_DONE, ICON_LABEL, ICON_ALARM_TIME, ICON_DURATION } from "./const";
-import { Timer } from "./types";
+import { GoogleHomeCardConfig, Timer } from "./types";
 import './countdown-timer';
 
 @customElement("timer-panel")
@@ -10,12 +10,12 @@ export class TimerPanel extends LitElement {
     @property({ type: Object })
     timer?: Timer;
 
-    @property({ type: Boolean })
-    showFireTime?: boolean;
+    @property({ type: Object })
+    config?: GoogleHomeCardConfig;
 
     timerNameTemplate() {
         return this.timer?.label != null ? html`
-                <div style="margin: 0 15px 0 15px;">
+                <div>
                     <span class="title">
                         <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_LABEL}"></ha-icon>
                         ${this.timer.label}
@@ -24,7 +24,7 @@ export class TimerPanel extends LitElement {
     }
 
     alarmTimeTemplate() {
-        return this.showFireTime ? html`
+        return this.config?.showFireTime ? html`
         <span class="fireTime">
             <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_ALARM_TIME}"></ha-icon>
             ${this.timer?.local_time.split(" ")[1]}
@@ -43,6 +43,9 @@ export class TimerPanel extends LitElement {
     }
 
     render() {
+        if (this.config?.hideInactiveTimers && this.timer?.status === "none") {
+            return;
+        }
         return html`
                 <div>
                     ${this.timerNameTemplate()}
@@ -99,7 +102,7 @@ export class TimerPanel extends LitElement {
           .title {
             color: var(--secondary-text-color);
             font-size: 1.2em;
-            padding: 0 5px 0 5px;
+            padding: 0 10px;
             text-transform: capitalize;
             font-weight: 500;
           }
