@@ -142,7 +142,7 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
           ? html`
               <div class="values">
                 <paper-dropdown-menu
-                  label="Alarm Entity (Required)"
+                  label="Alarm Entity ${this._config?.timerEntity === undefined ? "(Required)" : ""}"
                   @value-changed=${this._valueChanged}
                   .configValue=${'entity'}
                 >
@@ -155,7 +155,7 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
                   </paper-listbox>
                 </paper-dropdown-menu>
                 <paper-dropdown-menu
-                  label="Timer Entity (Required)"
+                  label="Timer Entity ${this._config?.entity === undefined ? "(Required)" : ""}"
                   @value-changed=${this._valueChanged}
                   .configValue=${'timerEntity'}
                 >

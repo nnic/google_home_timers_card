@@ -83,17 +83,19 @@ export class GoogleHomeCardNew extends LitElement {
       return this._showError(localize('common.show_error'));
     }
 
+    if (!this.config.entity && !this.config.timerEntity) {
+      return this._showWarning(localize('common.no_entities_warning'));
+    }
+
     const stateAlarms = this.hass.states[this.config.entity ?? ""];
     const stateTimers = this.hass.states[this.config.timerEntity ?? ""];
 
-    const entries = this.generateEntries(stateAlarms.attributes[JSON_ALARMS], stateTimers.attributes[JSON_TIMERS]);
+    const entries = this.generateEntries(stateAlarms?.attributes[JSON_ALARMS], stateTimers?.attributes[JSON_TIMERS]);
 
     return html`
-      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({
-      hasHold:
-        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action),
-    })} tabindex="0"
-        .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}>
+      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({ hasHold:
+        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action), })} tabindex="0"
+        .label=${`Google Home: ${this.config.entity || 'No Entity Defined' }`}>
         <div class="entries">
           ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
             <span class="value">${NO_TIMERS}</span>
