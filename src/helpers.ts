@@ -19,7 +19,7 @@ export async function* countDownGenerator(timestamp = 0) {
 }
 
 
-export const formatAlarmTime = (ts: number, isAmpm?: boolean) => {
+export const formatAlarmTime = (ts: number, isAmpm = false) => {
     const d = new Date(ts * 1000);
     const time = d.toLocaleString(window.navigator.language, { weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: isAmpm })
     return time

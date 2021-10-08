@@ -85,7 +85,6 @@ export class GoogleHomeCardNew extends LitElement {
 
     this.config = {
       name: 'Google Home',
-      use12hour: true,
       ...config,
     };
   }
@@ -121,9 +120,11 @@ export class GoogleHomeCardNew extends LitElement {
     }
 
     return html`
-      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({ hasHold:
-        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action), })} tabindex="0"
-        .label=${`Google Home: ${this.config.entity || 'No Entity Defined' }`}>
+      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({
+      hasHold:
+        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action),
+    })} tabindex="0"
+        .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}>
         <div class="entries">
           ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
             <span class="value">${NO_TIMERS}</span>
