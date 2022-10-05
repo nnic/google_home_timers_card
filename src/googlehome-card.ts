@@ -120,11 +120,9 @@ export class GoogleHomeCardNew extends LitElement {
     }
 
     return html`
-      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({
-      hasHold:
-        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action),
-    })} tabindex="0"
-        .label=${`Google Home: ${this.config.entity || 'No Entity Defined'}`}>
+      <ha-card .header=${this.config.name} @action=${this._handleAction} .actionHandler=${actionHandler({ hasHold:
+        hasAction(this.config.hold_action), hasDoubleClick: hasAction(this.config.double_tap_action), })} tabindex="0"
+        .label=${`Google HomeX: ${this.config.entity || 'No Entity Defined' }`}>
         <div class="entries">
           ${entries.length > 0 ? entries.map(x => x) : html`<div class="info">
             <span class="value">${NO_TIMERS}</span>
@@ -144,7 +142,8 @@ export class GoogleHomeCardNew extends LitElement {
 
     const entries: TemplateResult[] = [];
 
-    for (const alarm of alarms) {
+
+    for (const alarm of alarms.filter(x => x.alarm_id !== "alarm/last_missed_alarm_id")) {
       entries.push(this.generateAlarmEntry(alarm));
     }
 
