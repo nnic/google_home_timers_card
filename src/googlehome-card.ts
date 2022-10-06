@@ -133,7 +133,7 @@ export class GoogleHomeCardNew extends LitElement {
   }
 
   private generateAlarmEntry = (alarm: Alarm): TemplateResult => html`
-    <alarm-element .alarm=${alarm} .config=${this.config}></alarm-element>`;
+    <alarm-element .alarm=${alarm} .config=${this.config} .hass=${this._hass}></alarm-element>`;
 
   private generateTimerEntry = (timer: Timer): TemplateResult => html`
     <timer-panel .timer=${timer} .config=${this.config}></timer-panel>`;

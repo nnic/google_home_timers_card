@@ -25,6 +25,7 @@ export const ICON_DURATION = "mdi:timelapse";
 export const ICON_ALARM_TIME = "mdi:clock";
 export const ICON_LABEL = "mdi:label-variant";
 export const ICON_NEXT = "mdi:calendar-week";
+export const ICON_DELETE = "mdi:trash-can-outline";
 
 // TIME
 export const STRING_HOURS = "h ";

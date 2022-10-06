@@ -76,6 +76,10 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
     return this._config?.hideCardIfNoAlarmOrTimers || false;
   }
 
+  get _showDelete(): boolean {
+    return this._config?.showDelete || false;
+  }
+
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;
@@ -169,6 +173,13 @@ export class GoogleHomeCardEditor extends LitElement implements LovelaceCardEdit
                   <ha-switch
                     .checked=${this._hideCardIfNoAlarmOrTimers}
                     .configValue=${'hideCardIfNoAlarmOrTimers'}
+                    @change=${this._valueChanged}
+                  ></ha-switch>
+                </ha-formfield>
+                <ha-formfield .label=${`Show delete button`}>
+                  <ha-switch
+                    .checked=${this._showDelete}
+                    .configValue=${'showDelete'}
                     @change=${this._valueChanged}
                   ></ha-switch>
                 </ha-formfield>

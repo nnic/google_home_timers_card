@@ -3,7 +3,8 @@ import { customElement, property } from "lit/decorators";
 import { Alarm, GoogleHomeCardConfig } from "./types";
 import './countdown-timer';
 import { formatAlarmRecurance, formatAlarmTime } from "./helpers";
-import { ICON_ALARM, ICON_LABEL, ICON_NEXT } from "./const";
+import { ICON_ALARM, ICON_DELETE, ICON_LABEL, ICON_NEXT } from "./const";
+import { ActionHandlerEvent, HomeAssistant } from "custom-card-helpers";
 
 @customElement("alarm-element")
 export class AlarmPanel extends LitElement {
@@ -13,6 +14,15 @@ export class AlarmPanel extends LitElement {
 
   @property({ type: Object })
   config?: GoogleHomeCardConfig;
+
+  @property({ type: Object })
+  hass!: HomeAssistant;
+
+  _handleDelete(ev: ActionHandlerEvent) {
+    ev.stopPropagation();
+    const data =  {"entity_id" : this.config?.entity, "alarm_id": this.alarm.alarm_id}
+    this.hass.callService("google_home", "delete_alarm", data);
+  }
 
   alarmNameTemplate() {
     return this.alarm.label != null ? html`
@@ -28,6 +38,14 @@ export class AlarmPanel extends LitElement {
     return this.alarm.recurrence != null ? html`
             <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_NEXT}"></ha-icon>
         ` : ""
+  }
+
+  deleteAlarmTemplate() {
+    return this.config?.showDelete ? html`
+    <span>
+              <ha-icon @click="${this._handleDelete}" style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${ICON_DELETE}"></ha-icon>
+              </span>
+    ` : "";
   }
 
   render() {
@@ -50,6 +68,7 @@ export class AlarmPanel extends LitElement {
                 ${this.nextAlarmTemplate()}
                 ${formatAlarmRecurance(this.alarm.recurrence)}
               </span>
+              ${this.deleteAlarmTemplate()}
             </div>
           </div>
         </div>

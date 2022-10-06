@@ -24,6 +24,7 @@ export interface GoogleHomeCardConfig extends LovelaceCardConfig {
   hideInactiveTimers?: boolean;
   hideInactiveAlarms?: boolean;
   hideCardIfNoAlarmOrTimers?: boolean;
+  showDelete?: boolean
 }
 
 export interface Alarm {

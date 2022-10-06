@@ -1,8 +1,9 @@
 import { LitElement, html, CSSResult, css } from "lit";
 import { customElement, property } from "lit/decorators";
-import { ICON_TIMER, ICON_ALARM_DONE, ICON_LABEL, ICON_ALARM_TIME, ICON_DURATION } from "./const";
+import { ICON_TIMER, ICON_ALARM_DONE, ICON_LABEL, ICON_ALARM_TIME, ICON_DURATION, ICON_DELETE } from "./const";
 import { GoogleHomeCardConfig, Timer } from "./types";
 import './countdown-timer';
+import { ActionHandlerEvent, HomeAssistant } from "custom-card-helpers";
 
 @customElement("timer-panel")
 export class TimerPanel extends LitElement {
@@ -12,6 +13,15 @@ export class TimerPanel extends LitElement {
 
     @property({ type: Object })
     config?: GoogleHomeCardConfig;
+
+  @property({ type: Object })
+  hass!: HomeAssistant;
+
+  _handleDelete(ev: ActionHandlerEvent) {
+    ev.stopPropagation();
+    const data =  {"entity_id" : this.config?.entity, "alarm_id": this.timer?.timer_id}
+    this.hass.callService("google_home", "delete_timer", data);
+  }
 
     timerNameTemplate() {
         return this.timer?.label != null ? html`
@@ -42,6 +52,15 @@ export class TimerPanel extends LitElement {
         return timerIcon;
     }
 
+    
+  deleteTimerTemplate() {
+    return this.config?.showDelete ? html`
+    <span>
+              <ha-icon @click="${this._handleDelete}" style="padding: 0 5px 0 0; --mdc-icon-size: 24px;" icon="${ICON_DELETE}"></ha-icon>
+              </span>
+    ` : "";
+  }
+
     render() {
         if (this.config?.hideInactiveTimers && this.timer?.status === "none") {
             return;
@@ -62,6 +81,7 @@ export class TimerPanel extends LitElement {
                                 ${this.timer?.duration}
                             </span>
                             ${this.alarmTimeTemplate()}
+                            ${this.deleteTimerTemplate()}
                         </div>
                     </div>
                 </div>
