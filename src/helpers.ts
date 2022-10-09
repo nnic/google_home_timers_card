@@ -25,12 +25,16 @@ export const formatAlarmTime = (ts: number, isAmpm = false) => {
     return time
 }
 
-export const formatAlarmRecurance = (recurrence: number[]) => {
+export const formatAlarmRecurance = (recurrence: number[] | null) => {
+    if (recurrence === null) {
+        return "";
+    }
+
     let result = "";
 
     const weekdays = [1, 2, 3, 4, 5];
 
-    if (recurrence?.length >= 7) {
+    if (recurrence.length >= 7) {
         result = "Every day";
     } else if (weekdays.every(x => recurrence.includes(x))) {
         result = "Weekdays";
