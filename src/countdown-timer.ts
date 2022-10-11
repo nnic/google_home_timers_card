@@ -11,11 +11,11 @@ export class CountdownTimer extends LitElement {
     timer?: Timer;
 
     @state()
-    private countdownTimer: AsyncGenerator<string, string, unknown> = countDownGenerator(this.timer?.fire_time);
+    private countdownTimer: AsyncGenerator<string, string, unknown> = countDownGenerator(this.timer?.fire_time ?? 0);
 
     requestUpdate(name?: PropertyKey, oldValue?: Timer) {
         if (name && name == "timer" && this.timer?.fire_time !== oldValue?.fire_time) {
-            this.countdownTimer = countDownGenerator(this.timer?.fire_time);
+            this.countdownTimer = countDownGenerator(this.timer?.fire_time ?? 0);
         }
         return super.requestUpdate(name, oldValue);
     }

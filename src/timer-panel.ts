@@ -37,7 +37,7 @@ export class TimerPanel extends LitElement {
         return this.config?.showFireTime ? html`
         <span class="fireTime">
             <ha-icon style="padding: 0 3px 0 0; --mdc-icon-size: 1.1em;" icon="${ICON_ALARM_TIME}"></ha-icon>
-            ${this.timer?.local_time.split(" ")[1]}
+            ${this.timer?.local_time?.split(" ")[1]}
         </span>` : ""
     }
 
@@ -66,7 +66,7 @@ export class TimerPanel extends LitElement {
             return;
         }
         return html`
-                <div>
+                <div class="status-${this.timer?.status}">
                     ${this.timerNameTemplate()}
                     <div class="info">
                         <div class="icon">
@@ -126,6 +126,19 @@ export class TimerPanel extends LitElement {
             text-transform: capitalize;
             font-weight: 500;
           }
+
+          .status-paused {
+          color: var(--disabled-text-color);
+        }
+
+        .status-paused .icon {
+          color: var(--disabled-text-color);
+        }
+
+        .status-paused .title {
+          color: var(--disabled-text-color);
+        }
+
   `}
 
 }

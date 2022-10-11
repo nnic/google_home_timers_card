@@ -34,15 +34,15 @@ export interface Alarm {
   local_time_iso: string;
   status: "none" | "set" | "ringing" | "snoozed" | "inactive";
   label: string;
-  recurrence: number[];
+  recurrence: number[] | null;
 }
 
 export interface Timer {
   timer_id: string;
-  fire_time: number;
-  local_time: string;
-  local_time_iso: string;
+  fire_time: number | null;
+  local_time: string | null;
+  local_time_iso: string | null;
   status: "none" | "set" | "ringing" | "paused";
-  label: string;
+  label: string | null;
   duration: number;
 }
